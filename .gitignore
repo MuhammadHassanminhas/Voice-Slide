@@ -1,0 +1,51 @@
+# ── Secrets & Environment ─────────────────────────────────────────────
+.env
+.env.*
+*.pem
+
+# ── Python ────────────────────────────────────────────────────────────
+voiceslide/venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── ML Model Cache (downloaded at runtime, not shipped) ──────────────
+*.bin
+*.onnx
+*.pt
+
+# ── IDE / Editor ──────────────────────────────────────────────────────
+.vs/
+.vscode/
+*.suo
+*.user
+*.sln.docstates
+
+# ── OS Junk ───────────────────────────────────────────────────────────
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ── Test / Coverage ──────────────────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
+*.cover
+
+# ── User Data (generated at runtime) ─────────────────────────────────
+voiceslide/data/slides.json
+voiceslide/data/slides_backup.json
+voiceslide/uploads/
+
+# ── Extracted Slide Images (generated from PPTX, user-specific) ──────
+voiceslide/frontend/static/images/slide_*
+
+# ── Copilot Agent Cache ──────────────────────────────────────────────
+.agent/
+
+# ── Diagnostic / scratch scripts ─────────────────────────────────────
+voiceslide/_diag_scores.py

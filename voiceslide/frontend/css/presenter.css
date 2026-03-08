@@ -1,0 +1,166 @@
+/* ── Override global body lock (style.css sets overflow:hidden for reveal.js) */
+
+html, body {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+}
+
+/* ── Presenter Panel Layout ──────────────────────────────────────────── */
+
+.presenter-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 100px 24px 40px;   /* 100px top to clear topbar */
+}
+
+/* ── Status Bar ──────────────────────────────────────────────────────── */
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    margin-bottom: 28px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-danger);       /* Red = disconnected */
+    transition: background var(--transition-fast);
+}
+
+.status-dot.connected {
+    background: var(--accent-success);      /* Green = connected */
+}
+
+/* ── Q&A Sections ────────────────────────────────────────────────────── */
+
+.qa-section {
+    margin-bottom: 28px;
+}
+
+.qa-section__title {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+/* ── Last Question ───────────────────────────────────────────────────── */
+
+.last-question {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+}
+
+.last-question__text {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--accent-primary);
+    margin: 0;
+}
+
+/* ── Note Cards ──────────────────────────────────────────────────────── */
+
+.qa-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.qa-cards__empty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+}
+
+.qa-card {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    animation: card-fade-in 0.3s ease forwards;
+    opacity: 0;
+}
+
+.qa-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.qa-card__badge {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.qa-card__score {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.qa-card__note {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+@keyframes card-fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── History ─────────────────────────────────────────────────────────── */
+
+.qa-history {
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.qa-history__empty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+}
+
+.qa-history__entry {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+}
+
+.qa-history__question {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--text-secondary);
+    margin: 0 0 4px;
+}
+
+.qa-history__notes {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0;
+}

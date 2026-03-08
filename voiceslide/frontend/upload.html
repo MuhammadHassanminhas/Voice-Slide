@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="VoiceSlide — Upload and edit presentations." />
+    <title>VoiceSlide — Import Slides</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/upload.css" />
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="topbar__logo">VoiceSlide</div>
+        <nav class="topbar__nav">
+            <a href="/" class="btn-text">Back to Presentation</a>
+        </nav>
+    </header>
+
+    <main class="upload-container">
+        <div class="upload-header">
+            <h1 class="upload-title">Bring Your Own Slides</h1>
+            <p class="upload-subtitle">Upload a PowerPoint file, paste raw JSON data, or build slides visually.</p>
+        </div>
+
+        <!-- ── Tab Navigation ────────────────────────────────────────────────── -->
+        <div class="tabs" role="tablist">
+            <button class="tab-btn active" role="tab" aria-selected="true" data-target="tab-pptx">Upload .pptx</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-target="tab-json">Paste JSON</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-target="tab-editor">Web Editor</button>
+        </div>
+
+        <!-- ── Tab 1: PPTX Upload ────────────────────────────────────────────── -->
+        <section id="tab-pptx" class="tab-panel active" role="tabpanel">
+            <div class="dropzone" id="upload-dropzone">
+                <div class="dropzone__icon">📄</div>
+                <h3 class="dropzone__title">Drag & Drop PowerPoint</h3>
+                <p class="dropzone__text">or click to browse local files</p>
+                <input type="file" id="file-input" accept=".pptx" style="display:none;" />
+            </div>
+            <div id="upload-progress" class="progress-bar-container" style="display:none;">
+                <div class="progress-bar"></div>
+                <p class="progress-text">Converting...</p>
+            </div>
+        </section>
+
+        <!-- ── Tab 2: Paste JSON ─────────────────────────────────────────────── -->
+        <section id="tab-json" class="tab-panel" role="tabpanel">
+            <div class="json-editor-container">
+                <textarea id="json-input" class="code-textarea" placeholder="Paste your slides.json here..."
+                    spellcheck="false"></textarea>
+            </div>
+            <div class="panel-actions">
+                <button id="btn-save-json" class="btn-primary">Save & Present</button>
+            </div>
+        </section>
+
+        <!-- ── Tab 3: Web Editor ─────────────────────────────────────────────── -->
+        <section id="tab-editor" class="tab-panel" role="tabpanel">
+            <div class="editor-layout">
+                <!-- Editor Sidebar: List of Slides -->
+                <div class="editor-sidebar">
+                    <div class="sidebar-header">
+                        <h3>Slides</h3>
+                        <button id="btn-add-slide" class="btn-icon" title="Add Slide">+</button>
+                    </div>
+                    <ul id="editor-slide-list" class="slide-list">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+
+                <!-- Editor Main: Current Slide Form -->
+                <div class="editor-main" id="editor-form-container">
+                    <!-- Form populated dynamically by JS based on slide type -->
+                    <div class="empty-state">Select or add a slide to edit</div>
+                </div>
+            </div>
+            <div class="panel-actions">
+                <button id="btn-save-editor" class="btn-primary">Save & Present</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="/js/upload.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceSlide — Presenter Panel</title>
+  <!-- Same Google Fonts as index.html -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/presenter.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__logo">VoiceSlide</div>
+    <span class="topbar__subtitle">Presenter Panel</span>
+    <nav class="topbar__nav">
+      <a href="/" class="btn-back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <span>Back to Presentation</span>
+      </a>
+    </nav>
+  </header>
+
+  <main class="presenter-container">
+    <!-- Status -->
+    <div id="connection-status" class="status-bar">
+      <span class="status-dot"></span>
+      <span id="status-text">Connecting...</span>
+    </div>
+
+    <!-- Last Question -->
+    <section class="qa-section">
+      <h2 class="qa-section__title">Last Question</h2>
+      <div id="last-question" class="last-question">
+        <p class="last-question__text">No questions detected yet.</p>
+      </div>
+    </section>
+
+    <!-- Suggested Notes -->
+    <section class="qa-section">
+      <h2 class="qa-section__title">Suggested Notes</h2>
+      <div id="qa-cards" class="qa-cards">
+        <p class="qa-cards__empty">Waiting for a question...</p>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section class="qa-section">
+      <h2 class="qa-section__title">History</h2>
+      <div id="qa-history" class="qa-history">
+        <p class="qa-history__empty">No history yet.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/js/presenter.js"></script>
+</body>
+</html>

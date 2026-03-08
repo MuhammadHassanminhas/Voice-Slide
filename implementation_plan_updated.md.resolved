@@ -1,0 +1,449 @@
+# VoiceSlide — NLP Presentation Automation Tool
+
+> **End-to-end workflow using 100 % free & open-source technologies.**
+> Each phase ends with a visible, testable deliverable. The agent will pause after every phase for your approval before continuing.
+
+> [!IMPORTANT]
+> **Development strategy**: Phases 1–10 use **sample test slides** so each feature can be tested in isolation. The slide import system (Phase 2) ensures the final product accepts **any user-provided presentation**. All subsequent features are data-driven and work on whatever slides are loaded.
+
+---
+
+## Tech Stack Overview
+
+| Layer | Technology | License |
+|---|---|---|
+| Presentation Engine | **reveal.js** | MIT |
+| Slide Data Format | **JSON** (`slides.json`) — data-driven, no hardcoded HTML | — |
+| Slide Import (`.pptx`) | **python-pptx** | MIT |
+| Speech-to-Text (local) | **faster-whisper** (streamed via WebSocket) | MIT |
+| Intent Classification | **sentence-transformers** (cosine similarity on command embeddings) | Apache 2.0 |
+| Semantic Search | **sentence-transformers** (all-MiniLM-L6-v2) | Apache 2.0 |
+| Keyword Highlighting | **fuzzball** (fuzzy string matching) + emphasis-phrase detection | MIT |
+| Summarization | **distilbart-cnn-12-6** (lazy-loaded) | MIT |
+| Sentiment & Filler Analysis | **VADER** (vaderSentiment) | MIT |
+| Translation | **MarianMT** (Helsinki-NLP) or **LibreTranslate** | Apache 2.0 / AGPL-3.0 |
+| Q&A Retrieval | **sentence-transformers** + cosine similarity | Apache 2.0 |
+| Backend | **Flask** + **Flask-SocketIO** | BSD |
+| Analytics Charts | **Chart.js** | MIT |
+| Frontend | **HTML / CSS / JS** | — |
+| Package Manager | **pip** / **npm** | — |
+
+> [!NOTE]
+> Every library above is installable via `pip` or `npm` with zero API keys required.
+
+---
+
+## Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph Input["Slide Input"]
+        P["Upload .pptx"] --> SL["Slide Loader (python-pptx)"]
+        Q["Web Slide Editor"] --> SL
+        R["Paste JSON"] --> SL
+        SL --> SD["slides.json"]
+    end
+
+    subgraph Browser["Browser (Frontend)"]
+        SD --> A["reveal.js Presentation (dynamic)"]
+        A --> B["MediaRecorder (Raw Audio)"]
+        A --> C["Subtitle Overlay"]
+        A --> D["Private Q&A Panel"]
+        A --> N["Live Keyword Highlighter"]
+    end
+
+    subgraph Server["Python Backend (Flask)"]
+        E["WebSocket Hub"]
+        W["faster-whisper STT"]
+        F["Embedding-based Intent Classifier"]
+        G["Sentence-Transformers Embeddings"]
+        H["DistilBART Summarizer (Lazy)"]
+        I["VADER Sentiment Analyzer"]
+        J["MarianMT / LibreTranslate"]
+        M["Keyword Matcher & Emphasis Detector"]
+    end
+
+    B -- "raw audio chunks" --> E
+    E --> W -- "transcript" --> F
+    F -- "nav command" --> A
+    E --> G -- "context search" --> A
+    E --> I -- "analytics data" --> K["Analytics Dashboard"]
+    E --> H -- "summary" --> L["Email / Export"]
+    E --> J -- "translated text" --> C
+    F -- "Q&A intent" --> D
+    W -- "transcript" --> M
+    M -- "highlight / bold commands" --> N
+```
+
+---
+
+## Phase 1 — Project Setup & Data-Driven Presentation Viewer
+
+**Goal**: A working reveal.js presentation that renders slides dynamically from a `slides.json` file. Includes sample test slides for development.
+
+> [!NOTE]
+> Slides are **never hardcoded** in HTML. From the start, the system reads a `slides.json` file and dynamically builds `<section>` elements. This ensures every feature we build works on **any** slide content.
+
+### Steps
+
+1. Create project folder structure:
+
+   ```
+   voiceslide/
+   ├── backend/
+   │   ├── app.py
+   │   ├── slide_loader.py
+   │   └── requirements.txt
+   ├── frontend/
+   │   ├── index.html
+   │   ├── css/
+   │   │   └── style.css
+   │   └── js/
+   │       └── app.js
+   ├── data/
+   │   └── slides.json          ← all slide content lives here
+   └── README.md
+   ```
+
+2. Define the `slides.json` schema:
+   ```json
+   {
+     "title": "Presentation Title",
+     "theme": "dark",
+     "slides": [
+       {
+         "type": "title",
+         "heading": "Q3 Business Review",
+         "subheading": "Presented by Jane Smith",
+         "notes": "Welcome everyone..."
+       },
+       {
+         "type": "bullets",
+         "heading": "Company Overview",
+         "items": ["Global presence in 40+ countries", "15,000 employees", "Revenue: $2.4B"],
+         "notes": "Key stats for context..."
+       },
+       {
+         "type": "image",
+         "heading": "Q3 Revenue Chart",
+         "image_url": "/static/images/chart.png",
+         "caption": "Revenue grew 18% YoY",
+         "notes": "Q3 revenue was $680M..."
+       }
+     ]
+   }
+   ```
+   Supported slide types: `title`, `bullets`, `image`, `text`, `two-column`, `quote`.
+
+3. Create **sample test slides** in `data/slides.json` (6 slides: Title, Company Overview, Revenue Chart, Product Roadmap, Team, Thank You). These are used for testing during development.
+
+4. Build `backend/slide_loader.py`:
+   - Read `slides.json` on startup.
+   - Serve slide data to the frontend via a `/api/slides` endpoint.
+   - Validate the JSON schema on load.
+
+5. Build dynamic slide renderer in `js/app.js`:
+   - Fetch slide data from `/api/slides`.
+   - Dynamically create reveal.js `<section>` elements based on each slide's `type`.
+   - Initialize `Reveal.initialize()` after all slides are rendered.
+
+6. Install frontend dependencies (reveal.js via CDN — no npm needed).
+7. Add premium dark-theme styling in `style.css`.
+8. Install Python backend: `pip install flask flask-socketio`
+9. Create `app.py` serving the frontend on `http://localhost:5000`.
+10. Run the server and verify the sample presentation loads dynamically from `slides.json`.
+
+**✅ Deliverable**: A data-driven reveal.js presentation at `localhost:5000` — change `slides.json` and the presentation updates automatically.
+
+---
+
+## Phase 2 — Slide Import & Upload System
+
+**Goal**: Users can bring their own slides — upload a `.pptx` file, paste JSON, or use a simple web editor.
+
+> [!TIP]
+> During development, we still **test with the sample `slides.json`**. The import system simply provides more ways to create/replace that file.
+
+### Steps
+
+1. Install python-pptx: `pip install python-pptx`
+2. Build `backend/pptx_converter.py`:
+   - Accept an uploaded `.pptx` file.
+   - Extract each slide's title, body text, bullet points, images, and speaker notes using `python-pptx`.
+   - Auto-detect slide type (`title`, `bullets`, `image`, `text`) based on content.
+   - Output a valid `slides.json` file.
+3. Add an `/upload` page in the frontend with three import options:
+   - **Upload `.pptx`**: Drag-and-drop or file picker → backend converts to `slides.json` → redirects to presentation.
+   - **Paste JSON**: A code editor (using a `<textarea>` with monospace font) where users paste a `slides.json` directly → validates and saves.
+   - **Web Slide Editor**: A simple form-based editor:
+     - Add/remove/reorder slides
+     - Choose slide type (title, bullets, image, text)
+     - Fill in heading, items, notes, etc.
+     - Preview each slide as you build it
+     - "Save & Present" button → generates `slides.json` and starts the presentation.
+4. Add upload endpoint in `app.py`:
+   - `POST /api/upload-pptx` — accepts `.pptx`, converts, returns slide data.
+   - `POST /api/save-slides` — accepts JSON, validates, saves to `data/slides.json`.
+5. After any import, automatically regenerate embeddings (for Phase 4 context search) and update the active text set (for Phase 5 highlighting).
+6. Test:
+   - Upload a sample `.pptx` file → verify it converts and displays correctly.
+   - Paste custom JSON → verify it renders.
+   - Use the web editor → create 3 slides → present them.
+
+**✅ Deliverable**: Users can bring their own presentation via upload, paste, or web editor.
+
+---
+
+## Phase 3 — Voice Recognition Integration (faster-whisper)
+
+**Goal**: Stream audio from the browser to the Python backend for local, private speech-to-text.
+
+> [!IMPORTANT]
+> We use **faster-whisper** instead of the Web Speech API. This keeps all audio processing **100% local** — no data is ever sent to Google/cloud servers.
+
+### Steps
+
+1. Install faster-whisper: `pip install faster-whisper`
+   - Downloads the Whisper `base` model (~140 MB, one-time). Upgrade to `small` for better accuracy if your hardware allows.
+2. Add **browser audio capture** in `js/app.js`:
+   - Use `navigator.mediaDevices.getUserMedia()` to access the microphone.
+   - Use `MediaRecorder` API to capture audio in `webm/opus` format.
+   - Stream audio chunks every ~1 second to the backend via WebSocket (`socket.emit('audio_chunk', blob)`).
+3. Build `backend/transcriber.py`:
+   - Receive audio chunks via WebSocket.
+   - Buffer chunks and transcribe using `faster-whisper` (`WhisperModel("base", compute_type="int8")`).
+   - Emit transcript text back to the frontend via WebSocket.
+4. Add a floating transcript bar at the bottom of the presentation.
+5. Add a mic toggle button (start/stop listening) with a pulsing red visual indicator.
+6. Test with sample slides: speak into the mic and see words appear in real-time.
+
+**✅ Deliverable**: Fully local, privacy-safe live speech-to-text with on-screen transcript.
+
+---
+
+## Phase 4 — Embedding-Based Intent Classification & Voice Navigation
+
+**Goal**: Spoken commands navigate slides using semantic understanding, not brittle text matching.
+
+> [!NOTE]
+> We use **sentence-transformers** for intent classification — far more robust than fuzzy matching. "Can we skip to the next slide?" correctly maps to `NEXT_SLIDE`.
+
+### Steps
+
+1. Install sentence-transformers: `pip install sentence-transformers`
+2. Build `backend/intent_classifier.py` using **cosine similarity on embeddings**:
+   - Pre-compute embeddings for canonical command phrases:
+     - **NEXT_SLIDE**: ["next slide", "move forward", "next please", "skip ahead"]
+     - **PREV_SLIDE**: ["previous slide", "go back", "last slide", "go to previous"]
+     - **NEXT_POINT**: ["next point", "next bullet", "show next item"]
+     - **PREV_POINT**: ["previous point", "go back one point"]
+     - **GOTO_SLIDE**: ["go to slide 3", "jump to slide five", "switch to slide two"]
+     - **START_PRESENTATION**: ["start presentation", "begin the talk"]
+     - **END_PRESENTATION**: ["end presentation", "stop presenting", "that's all"]
+   - At runtime, embed the incoming transcript and compute cosine similarity against all command embeddings.
+   - If max similarity > **0.65** → trigger that intent. Otherwise → **NONE** (normal speech).
+3. Wire the pipeline: `faster-whisper transcript → intent classifier → WebSocket nav command → Reveal.js`:
+   - Server classifies intent from each transcript segment.
+   - Sends navigation command to the frontend.
+   - Frontend executes `Reveal.next()`, `Reveal.prev()`, `Reveal.slide(n)`, etc.
+4. Implement **cooldown timer** (500ms) to prevent duplicate triggers.
+5. Add a visual command indicator: brief toast notification (e.g., "▶ Next Slide") with a slide-in animation.
+6. Test with sample slides: Say "next slide", "can we skip ahead?", "go back", "jump to slide 3".
+
+**✅ Deliverable**: Robust, semantic voice navigation that understands natural phrasing.
+
+---
+
+## Phase 5 — Context-Aware Navigation
+
+**Goal**: Navigate to slides by content (e.g., "go back to the revenue chart").
+
+### Steps
+
+1. Sentence-transformers is already installed — no new dependencies.
+2. On server startup (or after slide import), extract text from each slide in `slides.json` and generate embeddings using `all-MiniLM-L6-v2`.
+3. Build `backend/context_search.py`:
+   - Accept a natural language query.
+   - Compute query embedding, find the slide with highest cosine similarity.
+   - Return the slide index.
+4. Add a new intent **GOTO_CONTENT** (triggered by "go to the…", "show me the…", "let's revisit…").
+5. Wire it up: content-based command → search embeddings → navigate to matching slide.
+6. **Re-index on slide import**: When new slides are loaded (Phase 2), regenerate all embeddings automatically.
+7. Test: say "let's go back to the Q3 revenue chart" → verify it jumps to the correct slide.
+
+**✅ Deliverable**: Content-based slide navigation — say a topic and jump to it. Works on any slide content.
+
+---
+
+## Phase 6 — Live Keyword Highlighting & Emphasis Detection
+
+**Goal**: When the presenter speaks about key points on the current slide, those points light up. When the presenter emphasizes something ("this is very important"), the text becomes bold.
+
+> [!NOTE]
+> Uses **fuzzy string matching** against the current slide's text from `slides.json` — works on any slide content the user provides.
+
+### How It Works
+
+```mermaid
+flowchart LR
+    T["Transcript Segment"] --> ED{"Emphasis Detected?"}
+    ED -- Yes --> B["Bold + Scale Up next matched text"]
+    ED -- No --> FM{"Fuzzy Match vs Slide Text?"}
+    FM -- "score ≥ 70" --> HL["Highlight matched bullet / keyword"]
+    FM -- "score < 70" --> NOP["No action"]
+```
+
+### Steps
+
+1. Install fuzzy matching: `pip install fuzzball` (~50 KB, MIT).
+2. Build `backend/keyword_highlighter.py`:
+   - On each slide change, extract text nodes from the **current slide in `slides.json`** as the **active text set**.
+   - For each transcript segment:
+     - **Emphasis detection**: Check for trigger phrases ("this is very important", "pay attention", "key point", "don't forget", "I want to stress", "the takeaway here is", etc.)
+     - **Fuzzy matching**: `fuzzball.fuzz.partial_ratio()` against each item in the active text set. **Score ≥ 70** → match.
+   - Emit `highlight_text` via WebSocket: `{ matched_texts: [...], emphasis: true/false }`
+3. Frontend highlighting in `js/app.js`:
+   - **Normal match** (`emphasis: false`): Add `.voice-highlighted` → **glowing highlight** animation (pulsing cyan glow, fades after 4s).
+   - **Emphasis match** (`emphasis: true`): Add `.voice-emphasized` → **bold**, **scale 1.05×**, **accent underline** (persists until slide change).
+   - On slide change, clear all highlight/emphasis classes.
+4. Add CSS animations in `style.css` (`.voice-highlighted`, `.voice-emphasized`, `@keyframes keyword-glow`).
+5. Add a "🔍 Tracking speech" toggle indicator.
+6. Test: Say a bullet point aloud → it glows. Say "this is very important" + a bullet → it becomes bold.
+
+**✅ Deliverable**: Slide content reacts live — works on any user-provided slides.
+
+---
+
+## Phase 7 — Live Transcription & Subtitles with Translation
+
+**Goal**: On-screen captions with optional multi-language translation.
+
+> [!TIP]
+> **MarianMT** (Helsinki-NLP) is lighter and faster than LibreTranslate for specific language pairs.
+
+### Steps
+
+1. Install: `pip install transformers sentencepiece` (~300 MB per language pair).
+2. Build `backend/translator.py`: lazy-load MarianMT model for the selected pair.
+3. Professional TV-style subtitle overlay with glassmorphism (last 2 lines, smooth scrolling).
+4. Language dropdown (English, Spanish, French, German, Urdu, Chinese).
+5. Toggle to show/hide subtitles.
+6. Test: Present in English while subtitles appear in Spanish.
+
+**✅ Deliverable**: Professional live subtitles with real-time translation (fully local).
+
+---
+
+## Phase 8 — Smart Q&A Assistant
+
+**Goal**: A private presenter panel that listens for questions and retrieves relevant notes from `slides.json`.
+
+### Steps
+
+1. Create `/presenter` route showing a private dashboard.
+2. Presenter notes come from the `notes` field in each slide of `slides.json` — works with any user-provided notes.
+3. Build `backend/qa_assistant.py`:
+   - Detect questions ("?" or "what/how/why..." patterns).
+   - Match against presenter notes via sentence-transformers.
+   - Return top 3 relevant notes.
+4. WebSocket-powered auto-update on the presenter panel.
+5. Card-based UI: detected question, relevant notes, suggested response.
+6. Test: Ask "What was our Q3 revenue?" → presenter panel shows relevant data.
+
+**✅ Deliverable**: Private Q&A panel — works with whatever notes the user provides.
+
+---
+
+## Phase 9 — Presentation Analytics Dashboard
+
+**Goal**: Post-presentation dashboard with speaking metrics.
+
+### Steps
+
+1. Build `backend/analytics.py`: speaking pace (WPM), filler words, VADER sentiment per slide, time per slide.
+2. Chart.js dashboard at `/analytics`: line chart (pace), bar chart (fillers), radar (sentiment), timeline (time/slide).
+3. Summary stat cards: total duration, average WPM, filler count, overall sentiment.
+4. Start/Stop recording controls.
+5. Test: Give a 2-minute talk → review stats.
+
+**✅ Deliverable**: Beautiful analytics dashboard with speaking insights.
+
+---
+
+## Phase 10 — Auto-Summarization & Export
+
+**Goal**: Generate a presentation summary from the spoken transcript.
+
+> [!NOTE]
+> **distilbart-cnn-12-6** — 60% smaller than BART-large, **lazy-loaded** only when visited.
+
+### Steps
+
+1. Transformers & torch are already installed from Phase 7 — no new dependencies.
+2. Build `backend/summarizer.py`: lazy-load DistilBART on first `/summary` visit.
+3. `/summary` page: slide-by-slide summary, key takeaways, action items.
+4. "Download as PDF" + "Copy to Clipboard" buttons.
+5. Test: After a presentation, review the auto-generated summary.
+
+**✅ Deliverable**: Auto-generated summary ready for sharing.
+
+---
+
+## Final Integration & Polish
+
+After all 10 phases are complete:
+
+1. Unify navigation across all pages (Upload/Editor, Presentation, Presenter Panel, Analytics, Summary).
+2. **Landing page** with:
+   - "Upload Presentation" button → Phase 2 upload page
+   - "Use Sample Slides" button → loads sample `slides.json` directly
+   - "Start Blank" button → opens the web editor
+3. Final end-to-end test: upload a `.pptx` → present with voice → view analytics → export summary.
+4. Create README with setup and usage instructions.
+
+---
+
+## Verification Plan
+
+### After Each Phase (Automated)
+
+- Start the Flask server: `python backend/app.py`
+- Open the browser and verify the feature works as described
+- The agent will capture screenshots/recordings as proof
+
+### Manual Testing
+
+- **Phase 1**: Modify `slides.json` → verify presentation updates dynamically
+- **Phase 2**: Upload a `.pptx` → verify conversion; use web editor → verify slides render
+- **Phase 3**: Speak into the microphone → verify transcript appears
+- **Phase 4**: Say navigation commands → verify slides change
+- **Phase 5**: Say "go to the revenue chart" → verify correct slide appears
+- **Phase 6**: Speak a bullet point → verify it highlights; say "this is very important" → verify bold
+- **Phase 7**: Enable Spanish subtitles → speak in English
+- **Phase 8**: Open `/presenter` panel → ask a question → verify notes appear
+- **Phase 9**: Give a test talk → visit `/analytics` → review charts
+- **Phase 10**: Visit `/summary` → review generated summary
+
+---
+
+## Estimated Disk Space & Memory Strategy
+
+| Component | Size | Loaded When |
+|---|---|---|
+| reveal.js (CDN) | 0 MB | Always |
+| python-pptx | ~15 MB | On `.pptx` upload |
+| faster-whisper `base` model | ~140 MB | On mic start |
+| sentence-transformers `all-MiniLM-L6-v2` | ~90 MB | On server start |
+| fuzzball (keyword highlighting) | ~50 KB | On server start |
+| DistilBART summarizer | ~600 MB | **Lazy — on `/summary` visit** |
+| MarianMT (per language pair) | ~300 MB | **Lazy — on translation enable** |
+| VADER lexicon | ~3 MB | On server start |
+| **Total on disk** | **~1.15 GB** (+ models) |
+| **RAM during presentation** | **~1.5 GB** (STT + embeddings + VADER + fuzzball) |
+| **RAM peak (with summary)** | **~3 GB** (adds DistilBART) |
+
+> [!CAUTION]
+> Make sure you have at least **4 GB of free disk space** and **4 GB free RAM** for the live presentation. The summarizer loads only after the presentation ends, so peak RAM is brief.
+
+> [!TIP]
+> **Lazy loading strategy**: Only faster-whisper, sentence-transformers, fuzzball, and VADER are loaded during a live presentation. Translation and summarization models load on-demand, keeping live presentation latency low.

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0a0e17"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00c8ff"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" rx="16" fill="url(#bg)"/>
+  <rect x="60" y="320" width="120" height="140" rx="8" fill="#00c8ff" opacity="0.7"/>
+  <rect x="220" y="260" width="120" height="200" rx="8" fill="#5b8def" opacity="0.7"/>
+  <rect x="380" y="200" width="120" height="260" rx="8" fill="#7c3aed" opacity="0.7"/>
+  <rect x="540" y="160" width="120" height="300" rx="8" fill="#a855f7" opacity="0.7"/>
+  <text x="400" y="80" text-anchor="middle" font-family="Inter,sans-serif" font-size="28" fill="#f1f5f9" font-weight="600">Q3 Revenue — $680M</text>
+  <text x="120" y="490" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#94a3b8">Q4 '24</text>
+  <text x="280" y="490" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#94a3b8">Q1 '25</text>
+  <text x="440" y="490" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#94a3b8">Q2 '25</text>
+  <text x="600" y="490" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#94a3b8">Q3 '25</text>
+  <line x1="40" y1="470" x2="760" y2="470" stroke="#94a3b8" stroke-opacity="0.3" stroke-width="1"/>
+</svg>

@@ -1,0 +1,129 @@
+/* ── Override global body lock (style.css sets overflow:hidden for reveal.js) */
+
+html, body {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+}
+
+/* ── Analytics Dashboard Layout ──────────────────────────────────────── */
+
+.analytics-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 100px 24px 40px;
+}
+
+/* ── Stat Blocks Row ─────────────────────────────────────────────────── */
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.stat-block {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+}
+
+.stat-block__icon {
+    font-size: 1.4rem;
+}
+
+.stat-block__value {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+.stat-block__label {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* ── Chart Sections ──────────────────────────────────────────────────── */
+
+.chart-section {
+    margin-bottom: 32px;
+}
+
+.chart-section__title {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.chart-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    height: 300px;
+    position: relative;
+}
+
+.chart-wrapper--short {
+    height: 220px;
+}
+
+/* ── Action Buttons ──────────────────────────────────────────────────── */
+
+.actions-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.btn-action {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btn-action:hover {
+    background: var(--bg-surface);
+    border-color: var(--accent-primary);
+}
+
+.btn-action--danger:hover {
+    border-color: var(--accent-danger);
+    color: var(--accent-danger);
+}
+
+/* ── Empty State ─────────────────────────────────────────────────────── */
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

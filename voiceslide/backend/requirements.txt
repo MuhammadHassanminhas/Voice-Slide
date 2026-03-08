@@ -1,0 +1,31 @@
+# VoiceSlide — Phase 1 Dependencies
+# Flask server
+Flask>=3.0,<4.0
+Flask-SocketIO>=5.3,<6.0
+Flask-CORS>=4.0,<5.0
+
+# WebSocket transport
+eventlet>=0.35,<1.0
+
+# Slide pipeline (.pptx import — Phase 2, included early)
+python-pptx>=1.0,<2.0
+
+# JSON schema validation
+jsonschema>=4.20,<5.0
+
+# Phase 3 Dependencies — NLP Engine (Transcription)
+faster-whisper>=1.0.0
+numpy>=1.20.0
+
+# Phase 4 Dependencies — Voice Navigation (Semantic Search Intents)
+sentence-transformers>=2.0.0
+
+# Phase 4.1 Dependencies — Voice Activity Detection (Silero VAD)
+# NOTE: torch and torchaudio are installed manually for CUDA 12.1 — do NOT add here.
+omegaconf>=2.3.0
+
+# Phase 6 Dependencies — Live Keyword Highlighting (Fuzzy Matching)
+thefuzz>=0.22.1
+
+# Phase 9 Dependencies — Speech Analytics (Sentiment Analysis)
+vaderSentiment>=3.3.2

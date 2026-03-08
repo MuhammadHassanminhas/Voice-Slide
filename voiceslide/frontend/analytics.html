@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceSlide — Speech Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/analytics.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__logo">VoiceSlide</div>
+    <span class="topbar__subtitle">Speech Analytics</span>
+    <nav class="topbar__nav">
+      <a href="/" class="btn-back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <span>Back to Presentation</span>
+      </a>
+    </nav>
+  </header>
+
+  <main class="analytics-container">
+    <!-- Stat Blocks -->
+    <section class="stats-row">
+      <div class="stat-block" id="stat-wpm">
+        <span class="stat-block__icon">⏱️</span>
+        <span class="stat-block__value">—</span>
+        <span class="stat-block__label">Avg WPM</span>
+      </div>
+      <div class="stat-block" id="stat-words">
+        <span class="stat-block__icon">🗣️</span>
+        <span class="stat-block__value">—</span>
+        <span class="stat-block__label">Total Words</span>
+      </div>
+      <div class="stat-block" id="stat-fillers">
+        <span class="stat-block__icon">🔸</span>
+        <span class="stat-block__value">—</span>
+        <span class="stat-block__label">Filler Words</span>
+      </div>
+      <div class="stat-block" id="stat-ratio">
+        <span class="stat-block__icon">📊</span>
+        <span class="stat-block__value">—</span>
+        <span class="stat-block__label">Filler Ratio</span>
+      </div>
+    </section>
+
+    <!-- Sentiment Over Time -->
+    <section class="chart-section">
+      <h2 class="chart-section__title">Sentiment Over Time</h2>
+      <div class="chart-wrapper">
+        <canvas id="sentiment-chart"></canvas>
+      </div>
+    </section>
+
+    <!-- Filler Word Breakdown -->
+    <section class="chart-section">
+      <h2 class="chart-section__title">Filler Word Breakdown</h2>
+      <div class="chart-wrapper chart-wrapper--short">
+        <canvas id="filler-chart"></canvas>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <section class="actions-row">
+      <button id="btn-refresh" class="btn-action">🔄 Refresh Data</button>
+      <button id="btn-reset" class="btn-action btn-action--danger">🗑️ Reset Session</button>
+    </section>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <p>No speech data yet. Start a presentation and speak to generate analytics.</p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/js/analytics.js"></script>
+</body>
+</html>
